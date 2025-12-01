@@ -1,9 +1,29 @@
 FROM php:8.2-apache
 
-RUN apt-get update -y && apt-get install -y openssl curl libpng-dev nano git cron sqlite3 zip unzip zlib1g-dev libpq-dev libicu-dev libzip-dev inetutils-ping graphicsmagick inkscape
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin/ --filename=composer
+# RUN apt-get update -y && apt-get install -y \
+#     openssl curl libpng-dev nano git cron sqlite3 zip unzip zlib1g-dev \
+#     libpq-dev libicu-dev libzip-dev inetutils-ping graphicsmagick inkscape \
+#     libfreetype6-dev libjpeg62-turbo-dev libwebp-dev
+#
+# RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+#     && docker-php-ext-install gd pdo pdo_pgsql pdo_mysql zip exif
+#
+# RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin/ --filename=composer
+#
+# RUN docker-php-ext-install pdo pdo_pgsql pdo_mysql zip gd exif
+RUN apt-get update && apt-get install -y \
+    curl \
+    unzip \
+    git \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd \
 
-RUN docker-php-ext-install pdo pdo_pgsql pdo_mysql zip gd exif
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 COPY httpd-vhosts.conf /etc/apache2/sites-available/000-default.conf
 RUN a2enmod rewrite
@@ -20,5 +40,6 @@ COPY . /var/www/html/
 RUN rm 15_digital_meal_plan.pdf dockerfile docker-compose.yaml httpd-vhosts.conf README.md
 
 RUN chown -R www-data:www-data *
+RUN chmod +x /var/www/html
 
 ENTRYPOINT ["/usr/sbin/apache2ctl", "-D", "FOREGROUND"]

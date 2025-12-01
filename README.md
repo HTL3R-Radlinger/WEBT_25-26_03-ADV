@@ -8,3 +8,6 @@ https://packagist.org to search for composer packages
 
 ```composer dump-autoload``` to reload Autoloading
 
+### US3
+
+```composer require endroid/qr-code```
