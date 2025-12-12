@@ -12,18 +12,18 @@
 
 {% for plan in plans %}
 <div class="meal-plan">
-    <h2>{{plan_name}}</h2>
-    <p><strong>School:</strong> {{school_name}}</p>
-    <p><strong>Week of delivery:</strong> {{week_of_delivery}}</p>
+    <h2>{{planName}}</h2>
+    <p><strong>School:</strong> {{schoolName}}</p>
+    <p><strong>Week of delivery:</strong> {{weekOfDelivery}}</p>
 
     <h3>Meals:</h3>
     <ul>
-        {% for meal in plan_meals %}
+        {% for meal in meals %}
         <li class="meal">
             <h2>{{name}}</h2>
             <p><strong>Allergens:</strong> {{allergens}}</p>
             <p><strong>Calories:</strong> {{nutritionalInfo}}</p>
-            <p><strong>Rating:</strong> {{rating}}</p>
+            <p><strong>Price:</strong> {{price}}</p>
         </li>
         {% endfor %}
     </ul>

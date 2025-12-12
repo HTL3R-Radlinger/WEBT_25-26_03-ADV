@@ -13,18 +13,12 @@ $data = [
     'title' => 'Temp!!!!!!!!'
 ];
 foreach ($mealPlans as $plan) {
-    $data['plans'][] = (object)[
-        'plan_name' => $plan->getName(),
+    $data['plans'][] = [
+        'plan_name' => $plan->getPlanName(),
         'school_name' => $plan->getSchoolName(),
         'week_of_delivery' => $plan->getWeekOfDelivery(),
-        'plan_meals' => array_map(fn($meal) => (object)[
-            'name' => $meal->getName(),
-            'allergens' => $meal->getAllergens(),
-            'nutritionalInfo' => $meal->getNutritionalInfo(),
-            'rating' => $meal->getPrice()
-        ], $plan->getMeals())
+        'plan_meals' => $plan->getMeals()
     ];
-
 }
 
 // Render the template

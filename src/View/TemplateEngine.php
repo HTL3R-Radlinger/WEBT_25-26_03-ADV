@@ -2,68 +2,119 @@
 
 namespace Radlinger\Mealplan\View;
 
+use function PHPUnit\Framework\equalToCanonicalizing;
+
 class TemplateEngine
 {
     public static function render(string $templatePath, array $data): string
     {
-        $output = file_get_contents($templatePath);
-        return self::renderContent($output, $data);
+        $content = file_get_contents($templatePath);
+        return self::renderContent($content, $data);
     }
 
     private static function renderContent(string $content, array $data): string
     {
-        while (preg_match('/\{% for (\w+) in (\w+) %\}/', $content, $startMatch, PREG_OFFSET_CAPTURE)) {
-            $startPos = $startMatch[0][1] + strlen($startMatch[0][0]); // use +, not .
-            $itemVar = $startMatch[1][0];
-            $arrayVar = $startMatch[2][0];
-
-            // Find matching {% endfor %}
-            $pos = $startPos;
-            $openCount = 1;
-            while ($openCount > 0 && preg_match('/\{% for (\w+) in (\w+) %}|\{% endfor %\}/', $content, $m, PREG_OFFSET_CAPTURE, $pos)) {
-                if (str_contains($m[0][0], '% for')) {
-                    $openCount++;
-                } else {
-                    $openCount--;
-                }
-                $pos = $m[0][1] + strlen($m[0][0]); // use +, not .
-            }
-
-            $endPos = $m[0][1];
-            $loopContent = substr($content, $startPos, $endPos - $startPos);
-
-            $replacement = '';
-            if (isset($data[$arrayVar]) && is_array($data[$arrayVar])) {
-                foreach ($data[$arrayVar] as $item) {
-                    $itemVars = is_object($item) ? self::objectToArray($item) : $item;
-                    $replacement .= self::renderContent($loopContent, $itemVars);
-                }
-            }
-
-            $length = $endPos + 11 - $startMatch[0][1]; // 11 = strlen('{% endfor %}')
-            $content = substr_replace($content, $replacement, $startMatch[0][1], $length);
-        }
-
-        // Replace scalar variables
-        foreach ($data as $key => $value) {
-            if (is_scalar($value)) {
-                $content = str_replace('{{' . $key . '}}', $value, $content);
-            }
-        }
-
-        return $content;
+        print_r($data);
+        $parsed = self::parseWithStack($content, $data);
+//        echo $parsed;
+//        return self::replaceVars($parsed, $data);
+        return "";
     }
 
-    private static function objectToArray(object $obj): array
+    /**
+     * Stack-basierter Parser für verschachtelte for-Schleifen.
+     */
+    private static function parseWithStack(string $content, array $data): string
     {
-        $arr = [];
-        $reflection = new \ReflectionClass($obj);
-        foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-            if (str_starts_with($method->name, 'get')) {
-                $key = lcfirst(substr($method->name, 3));
-                $arr[$key] = $method->invoke($obj);
+        $tokens = self::tokenize($content);
+        echo "START\n#########\n";
+        print_r($tokens);
+        echo "END\n#########\n";
+        $stack = [];
+        $output = '';
+
+        foreach ($tokens as $token) {
+            if ($token['type'] === 'for_open') {
+                $stack[] = [
+                    'var' => $token['var'],
+                    'array' => $token['array'],
+                    'inner' => ''
+                ];
+                continue;
+            }
+
+            if ($token['type'] === 'for_close') {
+                $loop = array_pop($stack);
+                $rendered = '';
+
+                $arr = $data[$loop['array']] ?? [];
+                if (!is_array($arr)) {
+                    $arr = [];
+                }
+
+                foreach ($arr as $item) {
+                    $scope = is_array($item)
+                        ? array_merge($data, $item)
+                        : array_merge($data, [$loop['var'] => $item]);
+
+                    $renderedBlock = self::replaceVars($loop['inner'], $scope);
+                    $renderedBlock = self::parseWithStack($renderedBlock, $scope);
+                    $rendered .= $renderedBlock;
+                }
+
+                if (empty($stack)) {
+                    $output .= $rendered;
+                } else {
+                    $stack[count($stack) - 1]['inner'] .= $rendered;
+                }
+                continue;
+            }
+
+            if ($token['type'] === 'text') {
+                if (empty($stack)) {
+                    $output .= $token['value'];
+                } else {
+                    $stack[count($stack) - 1]['inner'] .= $token['value'];
+                }
+                continue;
             }
         }
-        return $arr;
+
+        return $output;
+    }
+
+    /** Tokenizer: zerlegt das Template in Text + For-Tags */
+    private static function tokenize(string $content): array
+    {
+        $pattern = '/(\{%\s*for\s+(\w+)\s+in\s+(\w+)\s*%\}|\{%\s*endfor\s*%\})/';
+        $parts = preg_split($pattern, $content, -1, PREG_SPLIT_DELIM_CAPTURE);
+
+        $tokens = [];
+        for ($i = 0; $i < count($parts); $i++) {
+            $part = $parts[$i];
+            if ($part === '') continue;
+
+            if (preg_match('/^\{%\s*for\s+(\w+)\s+in\s+(\w+)\s*%\}$/', $part, $m)) {
+                $tokens[] = ['type' => 'for_open', 'var' => $m[1], 'array' => $m[2]];
+                continue;
+            }
+
+            if (preg_match('/^\{%\s*endfor\s*%\}$/', $part)) {
+                $tokens[] = ['type' => 'for_close'];
+                continue;
+            }
+
+            $tokens[] = ['type' => 'text', 'value' => $part];
+        }
+
+        return $tokens;
+    }
+
+    private static function replaceVars(string $content, array $data): string
+    {
+        return preg_replace_callback('/{{\s*(\w+)\s*}}/', function ($matches) use ($data) {
+            $key = $matches[1];
+            return $data[$key] ?? '';
+        }, $content);
     }
 }

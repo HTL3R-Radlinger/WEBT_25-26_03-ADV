@@ -6,11 +6,11 @@ use JsonSerializable;
 
 class MealPlan implements JsonSerializable
 {
-    private int $id;
-    private string $name;
-    private string $schoolName;
-    private string $weekOfDelivery;
-    private array $meals;
+    public int $id;
+    public string $planName;
+    public string $schoolName;
+    public string $weekOfDelivery;
+    public array $meals;
 
     public function __construct(
         int    $id,
@@ -21,7 +21,7 @@ class MealPlan implements JsonSerializable
     )
     {
         $this->id = $id;
-        $this->name = $name;
+        $this->planName = $name;
         $this->schoolName = $schoolName;
         $this->weekOfDelivery = $weekOfDelivery;
         $this->meals = $meals;
@@ -33,9 +33,9 @@ class MealPlan implements JsonSerializable
         return $this->id;
     }
 
-    public function getName(): string
+    public function getPlanName(): string
     {
-        return $this->name;
+        return $this->planName;
     }
 
     public function getSchoolName(): string
@@ -57,7 +57,7 @@ class MealPlan implements JsonSerializable
     {
         return [
             "id" => $this->getId(),
-            "name" => $this->getName(),
+            "name" => $this->getPlanName(),
             "schoolName" => $this->getSchoolName(),
             "weekOfDelivery" => $this->getWeekOfDelivery(),
             "meals" => $this->getMeals(),
