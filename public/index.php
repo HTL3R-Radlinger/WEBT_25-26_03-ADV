@@ -8,7 +8,8 @@ $mealPlans = MealSeeder::generate();
 
 // Prepare structured array for nested loops
 $data = [
-    'plans' => []
+    'plans' => [],
+    'title' => "Test!!!"
 ];
 
 foreach ($mealPlans as $plan) {
