@@ -2,15 +2,17 @@
 
 namespace Radlinger\Mealplan\Classes;
 
-class Meal implements \JsonSerializable
-{
-    public int $id;
-    public string $name;
-    public string $allergens;
-    public string $nutritionalInfo;
-    public float $price;
+use JsonSerializable;
 
-    function __construct(
+class Meal implements JsonSerializable
+{
+    private int $id;
+    private string $name;
+    private string $allergens;
+    private string $nutritionalInfo;
+    private float $price;
+
+    public function __construct(
         int    $id,
         string $name,
         string $allergens,
@@ -25,7 +27,40 @@ class Meal implements \JsonSerializable
         $this->price = $price;
     }
 
-    public function jsonSerialize(): array {
-        return get_object_vars($this);
+    // Getter
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getAllergens(): string
+    {
+        return $this->allergens;
+    }
+
+    public function getNutritionalInfo(): string
+    {
+        return $this->nutritionalInfo;
+    }
+
+    public function getPrice(): float
+    {
+        return $this->price;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            "id" => $this->getId(),
+            "name" => $this->getName(),
+            "allergens" => $this->getAllergens(),
+            "nutritionalInfo" => $this->getNutritionalInfo(),
+            "price" => $this->getPrice(),
+        ];
     }
 }

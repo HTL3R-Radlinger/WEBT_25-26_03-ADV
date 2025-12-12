@@ -2,38 +2,49 @@
 require_once '../vendor/autoload.php';
 
 use Radlinger\Mealplan\Seeder\MealSeeder;
+use Radlinger\Mealplan\View\TemplateEngine;
 
-$mealPlans = MealSeeder::generate();
+$view = new TemplateEngine();
 
+// Templates laden
+$index_template = $view->loadTemplate('../templates/index_template.html');
+$mealplan_template = $view->loadTemplate('../templates/mealplan_template.html');
+$meal_template = $view->loadTemplate('../templates/meal_template.html');
 
-$index_template = file_get_contents('../templates/index_template.html');
-$mealplans_template = file_get_contents('../templates/mealplans_template.html');
-$meal_template = file_get_contents('../templates/meal_template.html');
+$mealplans_html = "";
 
-foreach ($mealPlans as $plan) {
+// render Mealplans
+foreach (MealSeeder::generate() as $plan) {
 
+    $meals_html = "";
+    // render meals of the plans
+    foreach ($plan->getMeals() as $meal) {
+        $meals_html .= $view->render($meal_template, [
+            'meal_name' => $meal->getName(),
+            'meal_allergens' => $meal->getAllergens(),
+            'meal_nutritionalInfo' => $meal->getNutritionalInfo(),
+            'meal_price' => number_format($meal->getPrice(), 2)
+        ]);
+    }
+
+    $mealplans_html .= $view->render($mealplan_template, [
+        'plan_name' => $plan->getName(),
+        'plan_schoolName' => $plan->getSchoolName(),
+        'plan_weekOfDelivery' => $plan->getWeekOfDelivery(),
+        'meals' => $meals_html
+    ]);
 }
 
-$mealplans = 'WSF';
+$metaData = [
+    'title' => <<<TITLE
+    Mealplans            
+    TITLE,
+    'h1' => <<<H1
+    MealPlans
+    H1,
+    'mealplans' => $mealplans_html
+];
 
+$index_template = $view->render($index_template, $metaData);
 
-$output = str_replace('{{mealplans}}', $mealplans, $index_template);
-
-echo $output;
-?>
-
-
-<?php foreach ($mealPlans as $plan): ?>
-    <div class="meal-plan">
-        <h2><?= htmlspecialchars($plan->name) ?></h2>
-        <p>School: <?= htmlspecialchars($plan->schoolName) ?> | <?= htmlspecialchars($plan->weekOfDelivery) ?></p>
-        <?php foreach ($plan->meals as $meal): ?>
-            <div class="meal">
-                <strong><?= htmlspecialchars($meal->name) ?></strong><br>
-                Allergens: <?= htmlspecialchars($meal->allergens) ?><br>
-                <?= htmlspecialchars($meal->nutritionalInfo) ?><br>
-                Price: €<?= htmlspecialchars(number_format($meal->price, 2)) ?>
-            </div>
-        <?php endforeach; ?>
-    </div>
-<?php endforeach; ?>
+echo $index_template;
