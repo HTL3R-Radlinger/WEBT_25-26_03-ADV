@@ -6,11 +6,11 @@ use JsonSerializable;
 
 class Meal implements JsonSerializable
 {
-    private int $id;
-    private string $name;
-    private string $allergens;
-    private string $nutritionalInfo;
-    private float $price;
+    public int $id;
+    public string $name;
+    public string $allergens;
+    public string $nutritionalInfo;
+    public float $price;
 
     public function __construct(
         int    $id,
