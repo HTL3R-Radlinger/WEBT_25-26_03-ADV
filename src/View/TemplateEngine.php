@@ -7,30 +7,41 @@ class TemplateEngine
     public static function render(string $templatePath, array $data): string
     {
         $output = file_get_contents($templatePath);
-
         return self::renderContent($output, $data);
     }
 
     private static function renderContent(string $content, array $data): string
     {
-        // Handle loops recursively
-        if (preg_match_all('/\{% for (\w+) in (\w+) %}(.*?)\{% endfor %}/s', $content, $matches, PREG_SET_ORDER)) {
-            foreach ($matches as $match) {
-//                print_r($match);
-                [$fullMatch, $itemVar, $arrayVar, $loopContent] = $match;
-                echo $match[0];
-//                echo $fullMatch;
-                $replacement = '';
-                if (isset($data[$arrayVar]) && is_array($data[$arrayVar])) {
-                    foreach ($data[$arrayVar] as $item) {
-                        $itemVars = is_object($item) ? get_object_vars($item) : $item;
-                        // Render loop content recursively
-                        $replacement .= self::renderContent($loopContent, $itemVars);
-                    }
+        while (preg_match('/\{% for (\w+) in (\w+) %\}/', $content, $startMatch, PREG_OFFSET_CAPTURE)) {
+            $startPos = $startMatch[0][1] + strlen($startMatch[0][0]); // use +, not .
+            $itemVar = $startMatch[1][0];
+            $arrayVar = $startMatch[2][0];
+
+            // Find matching {% endfor %}
+            $pos = $startPos;
+            $openCount = 1;
+            while ($openCount > 0 && preg_match('/\{% for (\w+) in (\w+) %}|\{% endfor %\}/', $content, $m, PREG_OFFSET_CAPTURE, $pos)) {
+                if (str_contains($m[0][0], '% for')) {
+                    $openCount++;
+                } else {
+                    $openCount--;
                 }
-//echo $content;
-                $content = str_replace($fullMatch, $replacement, $content);
+                $pos = $m[0][1] + strlen($m[0][0]); // use +, not .
             }
+
+            $endPos = $m[0][1];
+            $loopContent = substr($content, $startPos, $endPos - $startPos);
+
+            $replacement = '';
+            if (isset($data[$arrayVar]) && is_array($data[$arrayVar])) {
+                foreach ($data[$arrayVar] as $item) {
+                    $itemVars = is_object($item) ? self::objectToArray($item) : $item;
+                    $replacement .= self::renderContent($loopContent, $itemVars);
+                }
+            }
+
+            $length = $endPos + 11 - $startMatch[0][1]; // 11 = strlen('{% endfor %}')
+            $content = substr_replace($content, $replacement, $startMatch[0][1], $length);
         }
 
         // Replace scalar variables
@@ -40,7 +51,19 @@ class TemplateEngine
             }
         }
 
-//        return $content;
-        return "";
+        return $content;
+    }
+
+    private static function objectToArray(object $obj): array
+    {
+        $arr = [];
+        $reflection = new \ReflectionClass($obj);
+        foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+            if (str_starts_with($method->name, 'get')) {
+                $key = lcfirst(substr($method->name, 3));
+                $arr[$key] = $method->invoke($obj);
+            }
+        }
+        return $arr;
     }
 }
