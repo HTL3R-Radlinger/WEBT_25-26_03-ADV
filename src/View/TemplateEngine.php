@@ -1,22 +1,41 @@
 <?php
 
 namespace Radlinger\Mealplan\View;
-
 class TemplateEngine
 {
-    public function loadTemplate(string $path): string
+    public static function render(string $templatePath, array $data): string
     {
-        $handle = fopen($path, 'r');
-        $template = fread($handle, filesize($path));
+        $handle = fopen($templatePath, 'r');
+        $output = fread($handle, filesize($templatePath));
         fclose($handle);
-        return $template;
-    }
 
-    public function render(string $template, array $vars): string
-    {
-        foreach ($vars as $key => $value) {
-            $template = str_replace('{{' . $key . '}}', $value, $template);
+        // Handle loops
+        if (preg_match_all('/\{% for (\w+) in (\w+) %\}(.*?)\{% endfor %\}/s', $output, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $match) {
+                [$fullMatch, $itemVar, $arrayVar, $loopContent] = $match;
+
+                $replacement = '';
+                if (isset($data[$arrayVar]) && is_array($data[$arrayVar])) {
+                    foreach ($data[$arrayVar] as $item) {
+                        $loopItem = $loopContent;
+                        foreach (get_object_vars($item) as $key => $value) {
+                            $loopItem = str_replace('{{' . $key . '}}', $value, $loopItem);
+                        }
+                        $replacement .= $loopItem;
+                    }
+                }
+
+                $output = str_replace($fullMatch, $replacement, $output);
+            }
         }
-        return $template;
+
+        // Replace simple variables
+        foreach ($data as $key => $value) {
+            if (!is_array($value)) {
+                $output = str_replace('{{' . $key . '}}', $value, $output);
+            }
+        }
+
+        return $output;
     }
 }
