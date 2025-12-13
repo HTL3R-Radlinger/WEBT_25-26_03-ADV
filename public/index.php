@@ -11,8 +11,18 @@ $apiLink = "http://localhost:8080/api.php?mealplanID=";
 
 // Prepare structured array for nested loops
 $data = [
+    'head' => <<<HEAD
+    <!DOCTYPE html>
+    <html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>MealPlans</title>
+        <link rel="stylesheet" href="/styles/style.css">
+    </head>
+    HEAD,
+    'header' => "All Meal Plans",
     'plans' => [],
-    'title' => "Test!!!"
 ];
 
 foreach ($mealPlans as $plan) {
@@ -26,4 +36,4 @@ foreach ($mealPlans as $plan) {
 }
 
 // Render the template
-echo TemplateEngine::render('../templates/index_template.html', $data);
+echo TemplateEngine::render('../templates/index.html', $data);

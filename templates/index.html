@@ -1,15 +1,6 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{title}}</title>
-    <link rel="stylesheet" href="/styles/style.css">
-</head>
+{{head}}
 <body>
-
-<h1>All Meal Plans</h1>
-
+<h1>{{header}}</h1>
 {% for plan in plans %}
 <div class="meal-plan">
     <h2>{{plan_name}}</h2>
