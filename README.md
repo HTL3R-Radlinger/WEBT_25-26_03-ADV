@@ -31,21 +31,19 @@ WEBT-VT | ADV | 03 - Coding Standards
 * `Settings -> Tools -> Action on Save`
 - Select `Reformat code` & `Rearrange code`
 
+### PHP Coding Standards
 
+#### Standard
+- PSR-12
 
+#### Tooling
+- PHP CS Fixer
+- Configuration: .php-cs-fixer.php
 
-
-
-
-
-
-
-
-
-
-
-
-
+#### Rules
+- 4-space indentation
+- One class per file
+- Strict type declarations
 
 ## Composer Infos
 
