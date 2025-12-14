@@ -5,8 +5,19 @@ namespace Radlinger\Mealplan\Seeder;
 use Radlinger\Mealplan\Classes\Meal;
 use Radlinger\Mealplan\Classes\MealPlan;
 
+/**
+ * Class MealSeeder
+ *
+ * Generates demo meal plans.
+ * Acts as a replacement for a database in this prototype.
+ */
 class MealSeeder
 {
+    /**
+     * Create and return an array of meal plan objects.
+     *
+     * @return array
+     */
     public static function generate(): array
     {
         $plans = [];

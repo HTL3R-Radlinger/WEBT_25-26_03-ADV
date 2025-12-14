@@ -1,6 +1,12 @@
+<!DOCTYPE html>
+<html lang="de">
 {{head}}
 <body>
-<h1>{{header}}</h1>
+<header>
+    <h1>{{header}}</h1>
+</header>
+
+<!-- Loop over all meal plans -->
 {% for plan in plans %}
 <div class="meal-plan">
     <h2>{{plan_name}}</h2>
@@ -9,6 +15,8 @@
 
     <h3>Meals:</h3>
     <ul>
+
+        <!-- Nested loop for meals -->
         {% subFor meal in plan_meals %}
         <li class="meal">
             <h2>{{name}}</h2>
@@ -18,9 +26,10 @@
         </li>
         {% endSubFor %}
     </ul>
+
+    <!-- QR Code -->
     <img src="{{qr_code}}" alt="QR Code for Meal Plan">
 </div>
 {% endfor %}
-
 </body>
 </html>
