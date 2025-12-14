@@ -16,8 +16,7 @@ class MealPlan
         string $schoolName,
         string $weekOfDelivery,
         array  $meals,
-    )
-    {
+    ) {
         $this->id = $id;
         $this->name = $name;
         $this->schoolName = $schoolName;
