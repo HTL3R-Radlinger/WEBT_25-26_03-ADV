@@ -37,7 +37,7 @@ WORKDIR /var/www/html/
 
 COPY . /var/www/html/
 
-RUN rm 15_digital_meal_plan.pdf dockerfile docker-compose.yaml httpd-vhosts.conf README.md
+RUN rm webt-adv-coding-standards.pdf dockerfile docker-compose.yaml httpd-vhosts.conf README.md
 
 RUN chown -R www-data:www-data *
 RUN chmod +x /var/www/html
