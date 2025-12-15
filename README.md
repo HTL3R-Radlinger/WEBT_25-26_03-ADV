@@ -54,5 +54,22 @@ WEBT-VT | ADV | 03 - Coding Standards
 
 ## Composer Infos
 
-* `composer require --dev friendsofphp/php-cs-fixer`
-* `vendor/bin/php-cs-fixer fix` for cmd refactoring
+`composer require --dev friendsofphp/php-cs-fixer`
+
+### Using PHP CS Fixer via the command line
+
+```bash
+  docker exec -it ADV3 bash
+  vendor/bin/php-cs-fixer fix
+  exit
+```
+
+## Setup & Run the Project
+
+```bash
+  docker compose up -d
+  docker exec -it ADV3 bash
+  
+  git config --global --add safe.directory /var/www/html
+  composer install
+```
